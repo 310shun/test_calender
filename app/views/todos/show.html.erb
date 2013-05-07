@@ -1,0 +1,30 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Due:</strong>
+  <%= @todo.due %>
+</p>
+
+<p>
+  <strong>Task:</strong>
+  <%= @todo.task %>
+</p>
+
+<p>
+  <strong>Generate:</strong>
+  <%= @todo.generate %>
+</p>
+
+<p>
+  <strong>Scaffold:</strong>
+  <%= @todo.scaffold %>
+</p>
+
+<p>
+  <strong>Calender todo:</strong>
+  <%= @todo.calender_todo %>
+</p>
+
+
+<%= link_to 'Edit', edit_todo_path(@todo) %> |
+<%= link_to 'Back', todos_path %>

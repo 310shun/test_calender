@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  due: 2013-05-07
+  task: MyString
+  generate: MyString
+  scaffold: MyString
+  calender_todo: MyString
+
+two:
+  due: 2013-05-07
+  task: MyString
+  generate: MyString
+  scaffold: MyString
+  calender_todo: MyString
