@@ -15,6 +15,11 @@ class TodosController < ApplicationController
   # GET /todos/new
   def new
     @todo = Todo.new
+    #@todo.due = Date.today + 1.week
+
+    if request.xml_http_request?
+      render partial: "form"
+    end
   end
 
   # GET /todos/1/edit
@@ -26,14 +31,23 @@ class TodosController < ApplicationController
   def create
     @todo = Todo.new(todo_params)
 
-    respond_to do |format|
+    if request.xml_http_request?
       if @todo.save
-        format.html { redirect_to @todo, notice: 'Todo was successfully created.' }
-        format.json { render action: 'show', status: :created, location: @todo }
-      else
-        format.html { render action: 'new' }
-        format.json { render json: @todo.errors, status: :unprocessable_entity }
+        render json: {due: @todo.due.day, task: @todo.task}
+        #render json: @todo
       end
+    else
+
+      respond_to do |format|
+        if @todo.save
+          format.html { redirect_to @todo, notice: 'Todo was successfully created.' }
+          format.json { render action: 'show', status: :created, location: @todo }
+        else
+          format.html { render action: 'new' }
+          format.json { render json: @todo.errors, status: :unprocessable_entity }
+        end
+      end
+
     end
   end
 

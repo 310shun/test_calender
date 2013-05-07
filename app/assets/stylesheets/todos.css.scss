@@ -1,3 +1,32 @@
 // Place all the styles related to the todos controller here.
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
+
+
+th
+{
+  width: 100px;
+}
+
+.calender_row
+{
+  height: 100px;
+}
+
+tr.calender_row td
+{
+  border: 1px solid black;
+  
+}
+
+
+
+.day_label
+{
+  text-alighn: left;
+}
+
+.day_task
+{
+  background-color: lime;
+}

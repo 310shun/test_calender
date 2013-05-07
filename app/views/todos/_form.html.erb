@@ -1,4 +1,4 @@
-<%= form_for(@todo) do |f| %>
+<%= form_for(@todo, remote: true, class: "new_todo") do |f| %>
   <% if @todo.errors.any? %>
     <div id="error_explanation">
       <h2><%= pluralize(@todo.errors.count, "error") %> prohibited this todo from being saved:</h2>
@@ -12,14 +12,15 @@
   <% end %>
 
   <div class="field">
-    <%= f.label :due %><br />
-    <%= f.date_select :due %>
+    <%= f.label "Due:" %>
+    <!--<%= f.date_select :due %>-->
+    <%= f.text_field :due, class: "edit_due_field" %>
   </div>
   <div class="field">
-    <%= f.label :task %><br />
+    <%= f.label "Task:" %>
     <%= f.text_field :task %>
   </div>
-  <div class="field">
+  <!-- <div class="field">
     <%= f.label :generate %><br />
     <%= f.text_field :generate %>
   </div>
@@ -30,8 +31,9 @@
   <div class="field">
     <%= f.label :calender_todo %><br />
     <%= f.text_field :calender_todo %>
-  </div>
+  </div> -->
   <div class="actions">
-    <%= f.submit %>
+    <%= f.submit 'OK', class: "btn btn-large btn-primary todo_new_ok"  %>
+    <a class="btn btn-large todo_new_cancel">Cancel</a>
   </div>
 <% end %>

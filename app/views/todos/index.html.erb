@@ -32,4 +32,140 @@
 
 <br />
 
+
+
+<table id="calender_table" class="table table-bordered">
+  <thead>
+    <tr>
+      <th>SUN</th>
+      <th>MON</th>
+      <th>TUE</th>
+      <th>WEN</th>
+      <th>THU</th>
+      <th>FRI</th>
+      <th>SAT</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr class="calender_row">
+    <% Date.new(2013, 5, -1).day.times do |n| %>
+      <!--1日の場合のみ、空白を挿入する処理を行う-->
+      <% if Date.new(2013, 5, n+1).day == 1 %>
+        <% Date.new(2013, 5, n+1).wday.times do %>
+          <td class="day_area"></td>
+        <% end %>
+      <% end %>
+
+      
+
+      <!--日曜日なら折り返す-->
+      <% if Date.new(2013, 5, n+1).wday == 0 %>
+        </tr>
+        <tr class="calender_row">
+      <% end %>
+      
+      <!--日付・タスクの挿入-->
+      <td class="day_area" id="<%= "day_area_#{n+1}" %>">
+        <div clss="day_label"><%= n + 1%></div>
+        <br />
+        <% if get_todo Date.new(2013, 5, n+1) %>
+          <% get_todo(Date.new(2013, 5, n+1)).each do |todo| %>
+            <div class="day_task"><%= todo.task %></div>
+          <% end %>
+        <% end %>
+      </td>
+
+      <!--最後の日付の場合のみ、最後の空白を埋める-->
+      <% if n+1 == Date.new(2013, 5, -1).day %>
+        <% (6 - Date.new(2013, 5, -1).wday).times do %>
+          <td class=""></td>
+        <% end %>
+      <% end %>
+      
+    <% end %>
+    </tr>
+  </tbody>
+</table>
+
+<!--Ajaxのためのダミーリンク-->
+<%= link_to '', new_todo_path, remote: true, class: "new_todo_show", title: "" %>
+
+<%= hidden_field :click_date, :tmp %>
+
+<div class="modal hide fade" id="todo_edit_modal">
+  <div class="modal-header">
+    <h3>ToDo</h3>
+  </div>
+  <div class="modal-body">
+    
+  </div>  
+</div>
+
+
+
+
+<!-- <div class="container">
+
+  <tbody>
+    <div class="row">
+    <% Date.new(2013, 5, -1).day.times do |n| %>
+      
+      <% if Date.new(2013, 5, n+1).day == 1 %>
+        <% Date.new(2013, 5, n+1).wday.times do %>
+          <div class="span1"></div>
+        <% end %>
+      <% end %>
+      
+      <% if Date.new(2013, 5, n+1).wday == 0 %>
+        </div>
+        <div class="row">
+      <% end %>
+      <div class="span1"><%= n + 1%></div>
+      
+    <% end %>
+    </div>
+  </tbody>
+</table> -->
+
 <%= link_to 'New Todo', new_todo_path %>
+
+
+<script type="text/javascript">
+  //モーダルの表示
+  $(".day_area").click(function(event){
+    //クリックされた日付を記憶
+    $("#click_date_tmp").val($(this).attr("id").replace("day_area_",""));
+    $("#todo_edit_modal").modal("show");
+  });
+
+  //モーダルの非表示
+  $(document).on('click', 'a.todo_new_cancel', function(event){
+    $("#todo_edit_modal").modal("hide");
+  });
+
+  //モーダルが表示されたときに、ダミーリンクでAjax開始
+  $("#todo_edit_modal").on('show', function(){
+    $(".new_todo_show").trigger('click');
+  });
+
+  //ToDo新規作成をモーダルに表示するイベントハンドラ
+  $('.new_todo_show').on('ajax:success', function(data, status, xhr){
+    //クリックされた日付の取得
+    var clicked_day = $("#click_date_tmp").val();
+    $(".modal-body").html(status);
+    $(".edit_due_field").val("2013-05-" + clicked_day);
+  });
+
+  $(document).on('ajax:success', "form.new_todo", function(data, status, xhr){
+    $("#todo_edit_modal").modal("hide");
+    var calender_day = status.due;
+    $("#day_area_" + calender_day).append('<div class="day_task">' + status.task + "</div>");
+  });
+
+  //クリックされた日付を記憶
+  // $(document).on('click', '.todo_new_ok', function(event){
+  //   console.log("$$$");
+  // });
+
+</script>
