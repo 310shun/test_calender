@@ -54,13 +54,21 @@ class TodosController < ApplicationController
   # PATCH/PUT /todos/1
   # PATCH/PUT /todos/1.json
   def update
-    respond_to do |format|
-      if @todo.update(todo_params)
-        format.html { redirect_to @todo, notice: 'Todo was successfully updated.' }
-        format.json { head :no_content }
+    if request.xml_http_request?
+      if @todo.update(due: params[:due], task: params[:task])
+        render json: {success: true}
       else
-        format.html { render action: 'edit' }
-        format.json { render json: @todo.errors, status: :unprocessable_entity }
+        render json: {success: false}
+      end
+    else
+      respond_to do |format|
+        if @todo.update(todo_params)
+          format.html { redirect_to @todo, notice: 'Todo was successfully updated.' }
+          format.json { head :no_content }
+        else
+          format.html { render action: 'edit' }
+          format.json { render json: @todo.errors, status: :unprocessable_entity }
+        end
       end
     end
   end

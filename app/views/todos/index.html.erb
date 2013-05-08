@@ -71,7 +71,9 @@
         <br />
         <% if get_todo Date.new(2013, 5, n+1) %>
           <% get_todo(Date.new(2013, 5, n+1)).each do |todo| %>
-            <div class="day_task draggable" title="<%= "day_#{n+1}" %>"><%= todo.task %></div>
+            <div class="day_task draggable" title="<%= "day_#{n+1}" %>" id="<%= todo.id %>">
+              <%= todo.task %>
+            </div>
           <% end %>
         <% end %>
       </td>
@@ -88,8 +90,10 @@
   </tbody>
 </table>
 
-<!--Ajaxのためのダミーリンク-->
+<!--Ajaxのためのダミーリンク：新規作成画面表示-->
 <%= link_to '', new_todo_path, remote: true, class: "new_todo_show", title: "" %>
+<!--Ajaxのためのダミーリンク：新規作成画面表示-->
+
 
 <%= hidden_field :click_date, :tmp %>
 
@@ -179,10 +183,21 @@
     var dropped_day = event.currentTarget.id.replace("day_area_", "");
 
     $("#" + event.currentTarget.id).append('<div class="day_task draggable" title="day_' + dropped_day + '">' + ui.draggable.context.innerText + "</div>");
+
+    //更新をRailsにリクエストする
+    $.ajax({
+      type: "PATCH",
+      url: "todos/" + ui.draggable.context.id,
+      data: "due=2013-05-" + dropped_day + "&task=" + ui.draggable.context.innerText
+    });
+    
+    //ドラッグ元アイテムを消す
     ui.draggable.context.remove();
 
     //新しく作られた.draggableのために、もう一度実行
     $(".draggable").draggable(dragOptions);
+
+
   });
 
 </script>
