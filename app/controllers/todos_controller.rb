@@ -24,6 +24,9 @@ class TodosController < ApplicationController
 
   # GET /todos/1/edit
   def edit
+    if request.xml_http_request?
+      render partial: "form"
+    end
   end
 
   # POST /todos
@@ -33,7 +36,7 @@ class TodosController < ApplicationController
 
     if request.xml_http_request?
       if @todo.save
-        render json: {due: @todo.due.day, task: @todo.task}
+        render json: {due: @todo.due.day, task: @todo.task, id: @todo.id}
         #render json: @todo
       end
     else
@@ -55,9 +58,19 @@ class TodosController < ApplicationController
   # PATCH/PUT /todos/1.json
   def update
     if request.xml_http_request?
-      if @todo.update(due: params[:due], task: params[:task])
-        render json: {success: true}
-      else
+      
+      if params[:due] && @todo.update(due: params[:due], task: params[:task])
+        render json: {due: @todo.due.day, task: @todo.task, id: @todo.id}
+      elsif todo_params && @todo.update(todo_params)
+        render json: {due: @todo.due.day, task: @todo.task, id: @todo.id}
+      else      
+
+
+      # if todo_params && @todo.update(todo_params)
+      #   render json: {due: @todo.due.day, task: @todo.task, id: @todo.id}
+      # elsif @todo.update(due: params[:due], task: params[:task])
+      #   render json: {due: @todo.due.day, task: @todo.task, id: @todo.id}
+      # else
         render json: {success: false}
       end
     else
@@ -77,9 +90,13 @@ class TodosController < ApplicationController
   # DELETE /todos/1.json
   def destroy
     @todo.destroy
-    respond_to do |format|
-      format.html { redirect_to todos_url }
-      format.json { head :no_content }
+    if request.xml_http_request?
+      render json: {success: true}
+    else
+      respond_to do |format|
+        format.html { redirect_to todos_url }
+        format.json { head :no_content }
+      end
     end
   end
 

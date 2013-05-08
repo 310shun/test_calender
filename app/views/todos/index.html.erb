@@ -1,5 +1,5 @@
-<h1>Listing todos</h1>
-
+ <h1>ToDoリスト-5月-</h1>
+<!-- 
 <table>
   <thead>
     <tr>
@@ -28,7 +28,7 @@
     </tr>
     <% end %>
   </tbody>
-</table>
+</table>  -->
 
 <br />
 
@@ -53,7 +53,7 @@
       <!--1日の場合のみ、空白を挿入する処理を行う-->
       <% if Date.new(2013, 5, n+1).day == 1 %>
         <% Date.new(2013, 5, n+1).wday.times do %>
-          <td class="day_area"></td>
+          <td></td>
         <% end %>
       <% end %>
 
@@ -71,7 +71,7 @@
         <br />
         <% if get_todo Date.new(2013, 5, n+1) %>
           <% get_todo(Date.new(2013, 5, n+1)).each do |todo| %>
-            <div class="day_task draggable" title="<%= "day_#{n+1}" %>" id="<%= todo.id %>">
+            <div class="day_task draggable" id="<%= todo.id %>">
               <%= todo.task %>
             </div>
           <% end %>
@@ -92,10 +92,13 @@
 
 <!--Ajaxのためのダミーリンク：新規作成画面表示-->
 <%= link_to '', new_todo_path, remote: true, class: "new_todo_show", title: "" %>
-<!--Ajaxのためのダミーリンク：新規作成画面表示-->
+
+
 
 
 <%= hidden_field :click_date, :tmp %>
+<%= hidden_field :click_task, :tmp, value: "" %>
+<%= hidden_field :click_id, :tmp, value: "" %>
 
 <div class="modal hide fade" id="todo_edit_modal">
   <div class="modal-header">
@@ -106,6 +109,15 @@
   </div>  
 </div>
 
+
+<div class="modal hide fade" id="todo_update_modal">
+  <div class="modal-header">
+    <h3>ToDo</h3>
+  </div>
+  <div class="modal-body-update">
+    
+  </div>  
+</div>
 
 
 
@@ -136,10 +148,69 @@
 
 
 <script type="text/javascript">
-  //モーダルの表示
-  $(".day_area").click(function(event){
+  
+  var dragOptions={
+    opacity : '0.5',
+    //helper  : 'clone',
+    //revert  : true 
+  }
+
+  $(".draggable").draggable(dragOptions);
+  $(".droppable").droppable();
+
+  //モーダルの表示(既存のToDo)
+  $(document).on("click", ".day_task", function(event){
+    event.stopPropagation();
+    //console.log("%%%");
+    var day_area_id = $(this).attr("id");
+    //クリックされた日付・タスクを記憶
+    $("#click_date_tmp").val(day_area_id.replace("day_area_",""));
+    $("#click_task_tmp").val($("#" + day_area_id).innerText);
+    $("#click_id_tmp").val($(this).attr("id"));
+
+    $("#todo_update_modal").modal("show");
+    
+  });
+
+
+  $("#todo_update_modal").on('show', function(){
+    $.get(
+      "todos/" + $("#click_id_tmp").val() + "/edit",
+      function(data){
+        $(".modal-body-update").html(data);
+      });
+  });
+
+
+  $(document).on("ajax:success", "form.edit_todo", function(data, status, xhr){
+    var id = $("#click_id_tmp").val();
+
+
+    $("#todo_update_modal").modal("hide");
+    console.log("#day_area_" + status.due);
+    $("#" + status.id).remove();
+    $("#day_area_" + status.due).append(
+      '<div class="day_task draggable" id="' + status.id + '">' + status.task + "</div>"
+      );
+
+    $(".draggable").draggable(dragOptions);
+
+  });
+
+
+
+
+//++++++++++++++++++++++++
+
+
+  //モーダルの表示(新しいToDo)
+  $(document).on("click", ".day_area", function(event){
+    //event.stopPropagation();
+    //console.log("$$$");
+    var day_area_id = $(this).attr("id");
     //クリックされた日付を記憶
-    $("#click_date_tmp").val($(this).attr("id").replace("day_area_",""));
+    $("#click_date_tmp").val(day_area_id.replace("day_area_",""));
+    
     $("#todo_edit_modal").modal("show");
   });
 
@@ -150,7 +221,10 @@
 
   //モーダルが表示されたときに、ダミーリンクでAjax開始
   $("#todo_edit_modal").on('show', function(){
+    //var clicked_task = $("#click_task_tmp").val();
     $(".new_todo_show").trigger('click');
+
+    
   });
 
   //ToDo新規作成をモーダルに表示するイベントハンドラ
@@ -164,25 +238,26 @@
   //Ajax成功時の、タスクの追加
   $(document).on('ajax:success', "form.new_todo", function(data, status, xhr){
     $("#todo_edit_modal").modal("hide");
+
     var calender_day = status.due;
-    $("#day_area_" + calender_day).append('<div class="day_task draggable" title="day_' + calender_day + '">' + status.task + "</div>");
+    $("#day_area_" + calender_day).append('<div class="day_task draggable" id="' + status.id + '" >' + status.task + "</div>");
+
+    $(".draggable").draggable(dragOptions);
   });
 
 
-  var dragOptions={
-    opacity : '0.5',
-    //helper  : 'clone',
-    revert  : true 
-  }
+  
 
-  $(".draggable").draggable(dragOptions);
-  $(".droppable").droppable();
+ 
 
-  //D&Dされた場所にToDoを移動する。ui:ドラッグしている要素、event:ドロップされた要素
+  //D&Dされた場所にToDoを移動する。ui:ドラッグしていた要素、event:ドロップされた要素
   $(".droppable").on("drop", function(event, ui){
     var dropped_day = event.currentTarget.id.replace("day_area_", "");
 
-    $("#" + event.currentTarget.id).append('<div class="day_task draggable" title="day_' + dropped_day + '">' + ui.draggable.context.innerText + "</div>");
+    $("#" + event.currentTarget.id).append('<div class="day_task draggable" id="' + ui.draggable.context.id + '">' + ui.draggable.context.innerText + "</div>");
+
+    //dropstopイベントで削除されないように、フラグを設定する
+    $("#" + ui.draggable.context.id).addClass("no_dropout_delete");
 
     //更新をRailsにリクエストする
     $.ajax({
@@ -197,7 +272,29 @@
     //新しく作られた.draggableのために、もう一度実行
     $(".draggable").draggable(dragOptions);
 
-
   });
+
+  //ToDoを削除するためのイベントハンドラ
+  $(document).on("dragstop", ".draggable", function(event, ui){
+    console.log(ui);
+    console.log(event);
+
+    if(!$(this).hasClass("no_dropout_delete"))
+    {
+      $(this).remove();
+      $.ajax({
+        type: "DELETE",
+        url: "todos/" + ui.helper.attr("id")
+      });
+      console.log(ui.helper.attr("id"));
+    }else{
+      $(this).removeClass("no_dropout_delete");
+    }
+  });
+
+
+
+
+  
 
 </script>
