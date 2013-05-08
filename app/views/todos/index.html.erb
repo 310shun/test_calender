@@ -66,12 +66,12 @@
       <% end %>
       
       <!--日付・タスクの挿入-->
-      <td class="day_area" id="<%= "day_area_#{n+1}" %>">
+      <td class="day_area droppable ui-state-default" id="<%= "day_area_#{n+1}" %>">
         <div clss="day_label"><%= n + 1%></div>
         <br />
         <% if get_todo Date.new(2013, 5, n+1) %>
           <% get_todo(Date.new(2013, 5, n+1)).each do |todo| %>
-            <div class="day_task"><%= todo.task %></div>
+            <div class="day_task draggable" title="<%= "day_#{n+1}" %>"><%= todo.task %></div>
           <% end %>
         <% end %>
       </td>
@@ -128,7 +128,7 @@
   </tbody>
 </table> -->
 
-<%= link_to 'New Todo', new_todo_path %>
+<!--<%= link_to 'New Todo', new_todo_path %>-->
 
 
 <script type="text/javascript">
@@ -157,15 +157,32 @@
     $(".edit_due_field").val("2013-05-" + clicked_day);
   });
 
+  //Ajax成功時の、タスクの追加
   $(document).on('ajax:success', "form.new_todo", function(data, status, xhr){
     $("#todo_edit_modal").modal("hide");
     var calender_day = status.due;
-    $("#day_area_" + calender_day).append('<div class="day_task">' + status.task + "</div>");
+    $("#day_area_" + calender_day).append('<div class="day_task draggable" title="day_' + calender_day + '">' + status.task + "</div>");
   });
 
-  //クリックされた日付を記憶
-  // $(document).on('click', '.todo_new_ok', function(event){
-  //   console.log("$$$");
-  // });
+
+  var dragOptions={
+    opacity : '0.5',
+    //helper  : 'clone',
+    revert  : true 
+  }
+
+  $(".draggable").draggable(dragOptions);
+  $(".droppable").droppable();
+
+  //D&Dされた場所にToDoを移動する。ui:ドラッグしている要素、event:ドロップされた要素
+  $(".droppable").on("drop", function(event, ui){
+    var dropped_day = event.currentTarget.id.replace("day_area_", "");
+
+    $("#" + event.currentTarget.id).append('<div class="day_task draggable" title="day_' + dropped_day + '">' + ui.draggable.context.innerText + "</div>");
+    ui.draggable.context.remove();
+
+    //新しく作られた.draggableのために、もう一度実行
+    $(".draggable").draggable(dragOptions);
+  });
 
 </script>
